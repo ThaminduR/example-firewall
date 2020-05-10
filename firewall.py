@@ -154,6 +154,18 @@ def writeToLog(isAccepted, isIncoming, readpacket):
     logfile.write(string)
     logfile.close()
 
+def forwardtoInterface(isIncoming, line):
+    if(isIncoming):
+        logfile = open("interface1-in.txt", "a")
+        logfile.write(line)
+        logfile.close()
+    else:
+        logfile = open("interface2-in.txt", "a")
+        logfile.write(line)
+        logfile.close()
+
+    
+    
 
 # Function return a dictionary containing necessary IP headers of a given packet
 
@@ -227,6 +239,7 @@ def readPackets(Lines, rules, defRules, isIncoming):
         isAccepted = checkRules(readpacket, rules, defRules, isIncoming)
         if(isAccepted):
             writeToLog(isAccepted, isIncoming, readpacket)
+            forwardtoInterface(isIncoming, line)
             packets.append(readpacket)
         else:
             writeToLog(isAccepted, isIncoming, readpacket)
@@ -256,7 +269,7 @@ Rules, defRules = readConfig(Line3)
 # get default rule
 defrules = getDefRules(defRules)
 
-# #uncomment to clear the log file for each session
+#clear the log file for each session 
 logfile = open('log.txt','w')
 logfile.write("")
 

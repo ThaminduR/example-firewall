@@ -66,21 +66,6 @@ def readConfig(Lines):
             Rules.append(rule)
     return Rules, defRules
 
-
-def compareIP(ip1, ip2):
-    if(ip1 == ip2):
-        return True
-    else:
-        return False
-
-
-def comparePorts(port1, port2):
-    if(port1 == port2):
-        return True
-    else:
-        return False
-
-
 def isTCP(ipheader):
     protonum = ipheader['protocol']
     if(protonum == tcp_number):
@@ -88,19 +73,20 @@ def isTCP(ipheader):
     else:
         return False
 
-
+#check a packet against firewall rules
 def checkRules(readpacket, rules, defRules, isIncoming):
     ipheader = readpacket[1]
     tcpudpheader = readpacket[0]
     istcp = isTCP(ipheader)
-    print("TCP: ", istcp)
 
+    #default action for packets
     defIn = defRules[0]
     defOut = defRules[1]
     isAccepted = None
 
     for rule in rules:
-        # default incoming action is allow.
+
+        #apply rules for incoming packets
         if((isIncoming) & (rule['DIR'] == "IN")):
             if((rule['IP'][:3] == ipheader['source address'][:3]) & (rule['PORT'] == tcpudpheader['source port'])):
                 if((rule['PROTO'] == 'TCP') & istcp):
@@ -114,7 +100,7 @@ def checkRules(readpacket, rules, defRules, isIncoming):
                     elif(rule['ACTION'] == 'REJECT'):
                         isAccepted = False
 
-        # default outgoing action is reject
+        #apply rules for outgoing packets
         elif((not isIncoming) & (rule['DIR'] == "OUT")):
             if((rule['IP'][:3] == ipheader['destination address'][:3]) & (rule['PORT'] == tcpudpheader['destination port'])):
                 if((rule['PROTO'] == 'TCP') & istcp):
@@ -127,15 +113,16 @@ def checkRules(readpacket, rules, defRules, isIncoming):
                         isAccepted = True
                     elif(rule['ACTION'] == 'REJECT'):
                         isAccepted = False
-                
+
+     # if no rule is applicable default action given will be executed
     if(isAccepted == None):
+        print("No rule found for the packet.\nExecuting default action.")
         if(isIncoming):
             isAccepted = defIn
-            print("going for default: ", defIn)
         else:
-            print("going for default x: ", defOut)
             isAccepted = defOut
     return isAccepted
+
 # Function return a dictionary containing necessary IP headers of a given packet
 
 

@@ -130,12 +130,15 @@ def writeToLog(isAccepted, isIncoming, readpacket):
     logfile = open("log.txt", "a")
     if(isIncoming):
         dirstr = "Incoming "
+        direction = "from "
+        ipaddress = '.'.join(map(str, readpacket[1]['source address']))
+        port = str(readpacket[0]['source port'])
     else:
         dirstr = "Outgoing "
-    ipadd = readpacket[1]['source address']
-    ipaddress = str(ipadd[0])+"."+str(ipadd[1])+"." + \
-        str(ipadd[2])+"."+str(ipadd[3])
-    port = str(readpacket[0]['source port'])
+        direction = "to "
+        ipaddress = '.'.join(map(str, readpacket[1]['destination address']))
+        port = str(readpacket[0]['destination port'])
+
     if (isTCP(readpacket[1])):
         tcpudp = "TCP "
     else:
@@ -145,7 +148,7 @@ def writeToLog(isAccepted, isIncoming, readpacket):
     else:
         acceptreject = "rejected.\n"
 
-    string = dirstr + tcpudp + "packet " + "from IP Addresss: " + \
+    string = dirstr + tcpudp + "packet " + direction +"IP Addresss: " + \
         ipaddress + " and Port: " + port + " was " + acceptreject
 
     logfile.write(string)
@@ -254,8 +257,8 @@ Rules, defRules = readConfig(Line3)
 defrules = getDefRules(defRules)
 
 # #uncomment to clear the log file for each session
-# logfile = open('log.txt','w')
-# logfile.write("")
+logfile = open('log.txt','w')
+logfile.write("")
 
 # Read incoming packets from Interface 1 (interface1.txt)
 in_accepted_packets, in_total_packets = readPackets(

@@ -66,6 +66,7 @@ def readConfig(Lines):
             Rules.append(rule)
     return Rules, defRules
 
+
 def isTCP(ipheader):
     protonum = ipheader['protocol']
     if(protonum == tcp_number):
@@ -73,20 +74,22 @@ def isTCP(ipheader):
     else:
         return False
 
-#check a packet against firewall rules
+# check a packet against firewall rules
+
+
 def checkRules(readpacket, rules, defRules, isIncoming):
     ipheader = readpacket[1]
     tcpudpheader = readpacket[0]
     istcp = isTCP(ipheader)
 
-    #default action for packets
+    # default action for packets
     defIn = defRules[0]
     defOut = defRules[1]
     isAccepted = None
 
     for rule in rules:
 
-        #apply rules for incoming packets
+        # apply rules for incoming packets
         if((isIncoming) & (rule['DIR'] == "IN")):
             if((rule['IP'][:3] == ipheader['source address'][:3]) & (rule['PORT'] == tcpudpheader['source port'])):
                 if((rule['PROTO'] == 'TCP') & istcp):
@@ -100,7 +103,7 @@ def checkRules(readpacket, rules, defRules, isIncoming):
                     elif(rule['ACTION'] == 'REJECT'):
                         isAccepted = False
 
-        #apply rules for outgoing packets
+        # apply rules for outgoing packets
         elif((not isIncoming) & (rule['DIR'] == "OUT")):
             if((rule['IP'][:3] == ipheader['destination address'][:3]) & (rule['PORT'] == tcpudpheader['destination port'])):
                 if((rule['PROTO'] == 'TCP') & istcp):
@@ -116,12 +119,38 @@ def checkRules(readpacket, rules, defRules, isIncoming):
 
      # if no rule is applicable default action given will be executed
     if(isAccepted == None):
-        print("No rule found for the packet.\nExecuting default action.")
         if(isIncoming):
             isAccepted = defIn
         else:
             isAccepted = defOut
     return isAccepted
+
+
+def writeToLog(isAccepted, isIncoming, readpacket):
+    logfile = open("log.txt", "a")
+    if(isIncoming):
+        dirstr = "Incoming "
+    else:
+        dirstr = "Outgoing "
+    ipadd = readpacket[1]['source address']
+    ipaddress = str(ipadd[0])+"."+str(ipadd[1])+"." + \
+        str(ipadd[2])+"."+str(ipadd[3])
+    port = str(readpacket[0]['source port'])
+    if (isTCP(readpacket[1])):
+        tcpudp = "TCP "
+    else:
+        tcpudp = "UDP "
+    if(isAccepted):
+        acceptreject = "accepted.\n"
+    else:
+        acceptreject = "rejected.\n"
+
+    string = dirstr + tcpudp + "packet " + "from IP Addresss:" + \
+        ipaddress + " and port:" + port + " was " + acceptreject
+
+    logfile.write(string)
+    logfile.close()
+
 
 # Function return a dictionary containing necessary IP headers of a given packet
 
@@ -167,6 +196,7 @@ def getTCPheader(packet):
 def readPackets(Lines, rules, defRules, isIncoming):
     i = 0
     packets = []
+    total = len(Lines)
     for line in Lines:
         readpacket = []
 
@@ -191,13 +221,13 @@ def readPackets(Lines, rules, defRules, isIncoming):
         # if(i == 5):
         #     break
         readpacket.append(ipheader)
-        print(readpacket)
-        if(checkRules(readpacket, rules, defRules, isIncoming)):
-            print("Allowed")
+        isAccepted = checkRules(readpacket, rules, defRules, isIncoming)
+        if(isAccepted):
+            writeToLog(isAccepted, isIncoming, readpacket)
             packets.append(readpacket)
         else:
-            print("Rejected")
-    return packets
+            writeToLog(isAccepted, isIncoming, readpacket)
+    return packets, total
 
 # get the default action for packets
 
@@ -219,11 +249,23 @@ def getDefRules(defRules):
 
 # Read rules from config.txt file
 Rules, defRules = readConfig(Line3)
+
 # get default rule
 defrules = getDefRules(defRules)
+
+#uncomment to clear the log file for each session
+logfile = open('log.txt','w')
+logfile.write("")
+
 # Read incoming packets from Interface 1 (interface1.txt)
-print("Incoming Packets")
-incoming_packets = readPackets(Lines1, Rules, defrules, True)
+in_accepted_packets, in_total_packets = readPackets(
+    Lines1, Rules, defrules, True)
+print("Interface-1 received {} packets. {} packets forwared to interface-2. ".format(
+      in_total_packets, len(in_accepted_packets)))
+
+
 # Read outgoing packets from Interface 2 (interface2.txt)
-print('Outgoing Packets')
-outgoing_packets = readPackets(Lines2, Rules, defrules, False)
+out_accepted_packets, out_total_packets = readPackets(
+    Lines2, Rules, defrules, False)
+print("Interface-2 eceived {} packets. {} packets forwarded to interface-1.".format(
+    out_total_packets, len(out_accepted_packets)))

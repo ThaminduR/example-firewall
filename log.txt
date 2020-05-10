@@ -1,0 +1,17 @@
+Incoming TCP packet from IP Addresss:52.214.218.60 and port:443 was rejected.
+Incoming UDP packet from IP Addresss:172.217.166.131 and port:443 was accepted.
+Incoming UDP packet from IP Addresss:172.217.166.131 and port:443 was accepted.
+Incoming TCP packet from IP Addresss:104.28.24.28 and port:104 was accepted.
+Incoming TCP packet from IP Addresss:104.28.24.28 and port:443 was accepted.
+Incoming UDP packet from IP Addresss:216.58.221.195 and port:517 was accepted.
+Incoming TCP packet from IP Addresss:52.197.212.105 and port:443 was accepted.
+Incoming UDP packet from IP Addresss:172.217.31.36 and port:517 was rejected.
+Incoming UDP packet from IP Addresss:172.217.31.36 and port:443 was accepted.
+Outgoing UDP packet from IP Addresss:192.168.8.101 and port:62855 was accepted.
+Outgoing TCP packet from IP Addresss:192.168.8.101 and port:56220 was rejected.
+Outgoing TCP packet from IP Addresss:192.168.8.101 and port:56247 was accepted.
+Outgoing TCP packet from IP Addresss:192.168.8.101 and port:56248 was accepted.
+Outgoing TCP packet from IP Addresss:192.168.8.101 and port:59759 was rejected.
+Outgoing UDP packet from IP Addresss:192.168.8.101 and port:62560 was accepted.
+Outgoing UDP packet from IP Addresss:192.168.8.101 and port:50540 was rejected.
+Outgoing TCP packet from IP Addresss:192.168.8.101 and port:59759 was rejected.
